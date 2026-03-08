@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231abc9c'%3E%3Cpath d='M20 10V8l-4-4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2h-2v2H6V6h8v4h4v2h2v-2h-2zM8 10h4v2H8v-2zm0 4h8v2H8v-2zm10-6V6.5L15.5 4H14v4h4z'/%3E%3C/svg%3E">
+    <title>HexaBeds – fair Bedwars</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1abc9c;        /* fresh teal */
+            --primary-dark: #16a085;
+            --secondary: #2ecc71;       /* vibrant green */
+            --accent: #3498db;           /* blue accent */
+            --dark: #0a0a1a;
+            --darker: #070712;
+            --light: #ffffff;
+            --light-gray: #f0f2f5;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Background with subtle blur - new image */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://i.ibb.co/S4VZGSfy/wmremove-transformed.png') no-repeat center center;
+            background-size: cover;
+            filter: blur(4px) brightness(0.7);
+            z-index: -1;
+        }
+        
+        /* Modern header */
+        header {
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            background: rgba(10, 10, 26, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: var(--transition);
+        }
+        
+        header.scrolled {
+            padding: 0.6rem 5%;
+            background: rgba(7, 7, 18, 0.95);
+            box-shadow: var(--shadow);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            z-index: 101;
+        }
+        
+        .logo {
+            height: 5rem;
+            width: auto;
+            transition: var(--transition);
+        }
+        
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 101;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.05rem;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: var(--transition);
+            opacity: 0.9;
+        }
+        
+        nav a:hover {
+            opacity: 1;
+            color: var(--secondary);
+        }
+        
+        nav a.active {
+            color: var(--secondary);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            transition: var(--transition);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 5%;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            padding-top: 7rem;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+            line-height: 1.2;
+        }
+        
+        .hero h1 strong {
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Server info card (glass) */
+        .server-card {
+            background: rgba(20, 20, 40, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(26, 188, 156, 0.2);
+            border-radius: 60px;
+            padding: 1.8rem 3rem;
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .players-online {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .players-online .count {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .players-online .label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .ip-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .ip-address {
+            font-size: 2rem;
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            padding: 0.3rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: 1px;
+        }
+        
+        .copy-btn {
+            background: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            padding: 0.6rem 1.8rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            align-self: center;
+        }
+        
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Button container in hero */
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        /* Features section */
+        .features {
+            padding: 6rem 5%;
+            background: rgba(10, 10, 26, 0.6);
+            backdrop-filter: blur(8px);
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            font-weight: 600;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: rgba(20, 20, 40, 0.4);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(26, 188, 156, 0.15);
+            backdrop-filter: blur(5px);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(26, 188, 156, 0.4);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        /* Staff section */
+        .staff-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .staff-card {
+            background: rgba(20, 20, 40, 0.4);
+            border-radius: 12px;
+            padding: 2rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(26, 188, 156, 0.15);
+            backdrop-filter: blur(5px);
+            flex: 0 1 auto;
+            min-width: 240px;
+            transition: var(--transition);
+        }
+        
+        .staff-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(26, 188, 156, 0.4);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .staff-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .staff-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .staff-role {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .staff-desc {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* Download section (join server) */
+        .download {
+            padding: 6rem 5%;
+            text-align: center;
+            position: relative;
+        }
+        
+        .download-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            padding: 1.1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            text-decoration: none;
+            margin-top: 1.5rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.4);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(26, 188, 156, 0.6);
+        }
+        
+        .pro-btn-large {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            color: white;
+            padding: 1.1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            text-decoration: none;
+            margin-top: 1.5rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .pro-btn-large:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.6);
+        }
+        
+        /* Page sections */
+        .page-section {
+            min-height: 100vh;
+            padding: 8rem 5% 4rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .page-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        
+        .page-section p {
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .page-section ul {
+            margin-bottom: 2rem;
+            padding-left: 1.5rem;
+        }
+        
+        .page-section li {
+            margin-bottom: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 4rem 5% 2rem;
+            background: rgba(5, 5, 15, 0.95);
+            text-align: center;
+            border-top: 1px solid rgba(26, 188, 156, 0.2);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+        
+        .social-links a:hover {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .opensource-notice {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            .server-card {
+                flex-direction: column;
+                gap: 1.5rem;
+                padding: 1.8rem 2rem;
+            }
+            .ip-address {
+                font-size: 1.6rem;
+            }
+            .logo {
+                height: 4.2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                max-width: 300px;
+                height: 100vh;
+                background: rgba(7, 7, 18, 0.98);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: var(--transition);
+                z-index: 100;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            nav.active {
+                right: 0;
+            }
+            nav ul {
+                flex-direction: column;
+                gap: 2rem;
+                padding: 2rem;
+            }
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .logo {
+                height: 3.8rem;
+            }
+        }
+        
+        /* Page transitions */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <header id="main-header">
+        <!-- Logo only: image larger -->
+        <a href="#" class="logo-container" data-page="home">
+            <img src="https://i.ibb.co/gbzpp5TJ/Chat-GPT-Image-Feb-22-2026-02-30-11-AM.png" alt="HexaBeds logo" class="logo">
+        </a>
+        
+        <button class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <nav id="main-nav">
+            <ul>
+                <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+                <li><a href="#" class="nav-link" data-page="gamemodes">Gamemodes</a></li>
+                <li><a href="#" class="nav-link" data-page="support">Support</a></li>
+                <li><a href="https://discord.gg/xS6bAbEYTY" target="_blank">Discord</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <!-- HOME PAGE -->
+        <div class="page active" id="home-page">
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Bedwars but <strong class="gradient-text">fair & competitive</strong></h1>
+                    <p>Tired of joining games where one team dominates? HexaBeds fixes that with skill‑based matchmaking — balanced, intense, and fun.</p>
+                    
+                    <!-- Server glass card -->
+                    <div class="server-card">
+                        <div class="players-online">
+                            <span class="count">1.4k</span>
+                            <span class="label">PLAYERS ONLINE</span>
+                        </div>
+                        <div class="ip-block">
+                            <span class="ip-address">play.hexabeds.net</span>
+                            <button class="copy-btn" id="copyIpBtn"><i class="far fa-clipboard"></i> copy IP</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-buttons">
+                        <a href="https://discord.gg/xS6bAbEYTY" class="download-btn">
+                            <i class="fab fa-discord"></i> Join Discord
+                        </a>
+                        <a href="#" class="pro-btn-large" data-page="gamemodes">
+                            <i class="fas fa-gamepad"></i> Gamemodes
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="features">
+                <h2 class="section-title">Why <span class="gradient-text">HexaBeds</span>?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-scale-balanced"></i></div>
+                        <h3>MMR matchmaking</h3>
+                        <p>Play against players at your level — no more unfair lobbies.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Ranked progression</h3>
+                        <p>Climb the ranks and earn recognition for your skill.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                        <h3>Fast competitive</h3>
+                        <p>Quick games that reward strategy, teamplay and skill.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="features" style="background: transparent;">
+                <h2 class="section-title"><span class="gradient-text">Meet</span> the staff</h2>
+                <div class="staff-grid">
+                    <div class="staff-card">
+                        <div class="staff-avatar">H</div>
+                        <h4>Huirzv</h4>
+                        <div class="staff-role">Owner</div>
+                        <div class="staff-desc">keeping bedwars fair since 2025</div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="download">
+                <div class="download-content">
+                    <h2 class="section-title">Ready to <span class="gradient-text">join</span>?</h2>
+                    <p>Experience Bedwars without the sweats. Balanced, competitive, and fun.</p>
+                    <div class="hero-buttons">
+                        <button class="download-btn" id="copyIpBtn2">
+                            <i class="fas fa-copy"></i> copy IP
+                        </button>
+                        <a href="https://discord.gg/xS6bAbEYTY" class="pro-btn-large">
+                            <i class="fab fa-discord"></i> join discord
+                        </a>
+                    </div>
+                    <div class="version-info" style="margin-top: 1.5rem; color: rgba(255,255,255,0.5);">
+                        Java & Bedrock 1.21.x · play.hexabeds.net
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- GAMEMODES PAGE -->
+        <div class="page" id="gamemodes-page">
+            <section class="page-section">
+                <h2><span class="gradient-text">⚡ Custom</span> gamemodes</h2>
+                <p>Beyond classic Bedwars — we offer unique modes that keep every match fresh.</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 2rem 0;">
+                    <span style="background: rgba(26,188,156,0.15); padding: 0.4rem 1.2rem; border-radius: 30px; border: 1px solid var(--primary);"><i class="fas fa-hook"></i> Grappling Bedwars</span>
+                    <span style="background: rgba(26,188,156,0.15); padding: 0.4rem 1.2rem; border-radius: 30px; border: 1px solid var(--primary);"><i class="fas fa-star"></i> Lucky Block Bedwars</span>
+                    <span style="background: rgba(26,188,156,0.15); padding: 0.4rem 1.2rem; border-radius: 30px; border: 1px solid var(--primary);"><i class="fas fa-bolt"></i> Rush mode</span>
+                    <span style="background: rgba(26,188,156,0.15); padding: 0.4rem 1.2rem; border-radius: 30px; border: 1px solid var(--primary);"><i class="fas fa-shield"></i> Ranked 4v4</span>
+                </div>
+                <div class="features-grid" style="grid-template-columns: repeat(2,1fr);">
+                    <div class="feature-card"><h3>🪝 Grappling hook</h3><p>Swing across the map, break beds fast — mobility meets strategy.</p></div>
+                    <div class="feature-card"><h3>🎲 Lucky blocks</h3><p>Break blocks for random treats, traps, and surprises. mayhem.</p></div>
+                    <div class="feature-card"><h3>⚔️ Ranked 4v4</h3><p>Team up and climb the MMR ladder. Season rewards.</p></div>
+                    <div class="feature-card"><h3>⏱️ Fast rush</h3><p>Diamond generators start upgraded. 15min max games.</p></div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- SUPPORT PAGE (FAQ) -->
+        <div class="page" id="support-page">
+            <section class="page-section">
+                <h2><span class="gradient-text">FAQ</span> & support</h2>
+                <div style="background: rgba(20,20,40,0.4); border-radius: 20px; padding: 2rem; border: 1px solid rgba(26,188,156,0.2);">
+                    <p><strong>❓ How do I join?</strong><br>Java 1.21.x – IP: <strong>play.hexabeds.net</strong>. Bedrock port 19132.</p>
+                    <p style="margin-top: 1.5rem;"><strong>❓ Is there ranked matchmaking?</strong><br>Yes! MMR based matchmaking and visible ranks. Win = gain rating.</p>
+                    <p style="margin-top: 1.5rem;"><strong>❓ I found a bug / hacker</strong><br>Report in our discord #reports – staff responds quickly.</p>
+                    <p style="margin-top: 1.5rem;"><strong>❓ Cracked / offline mode?</strong><br>No, only premium Minecraft accounts (Java edition).</p>
+                </div>
+                <div style="text-align: center; margin-top: 3rem;">
+                    <a href="https://discord.gg/xS6bAbEYTY" class="download-btn"><i class="fab fa-discord"></i> open discord</a>
+                    <p style="margin-top: 2rem;">Owner: Huirzv — ping on discord for urgent issues.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="social-links">
+            <a href="https://discord.gg/xS6bAbEYTY"><i class="fab fa-discord"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+        </div>
+        <div class="footer-links">
+            <a href="#" data-page="home">Home</a>
+            <a href="#" data-page="gamemodes">Gamemodes</a>
+            <a href="#" data-page="support">Support</a>
+            <a href="#">Store</a>
+            <a href="#">Wiki</a>
+        </div>
+        <p class="copyright">© 2025 HexaBeds. Not affiliated with Mojang. Fair bedwars forever.</p>
+        <p class="opensource-notice">Built with <i class="fas fa-heart" style="color: var(--primary);"></i> for the community</p>
+    </footer>
+    
+    <script>
+        (function() {
+            const header = document.getElementById('main-header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) header.classList.add('scrolled');
+                else header.classList.remove('scrolled');
+            });
+
+            const menuToggle = document.getElementById('menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+            menuToggle.addEventListener('click', function() {
+                mainNav.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+                menuToggle.innerHTML = mainNav.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+            });
+
+            function copyIp() {
+                const ip = 'play.hexabeds.net';
+                navigator.clipboard.writeText(ip).then(() => {
+                    alert('IP copied to clipboard!');
+                }).catch(() => prompt('Press Ctrl+C to copy IP:', ip));
+            }
+            document.getElementById('copyIpBtn').addEventListener('click', copyIp);
+            const copyBtn2 = document.getElementById('copyIpBtn2');
+            if (copyBtn2) copyBtn2.addEventListener('click', copyIp);
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+            const footerNavs = document.querySelectorAll('.footer-links a[data-page]');
+            const logoLink = document.querySelector('.logo-container');
+
+            function setActivePage(pageId) {
+                pages.forEach(p => p.classList.remove('active'));
+                const target = document.getElementById(pageId + '-page');
+                if (target) target.classList.add('active');
+
+                navLinks.forEach(link => {
+                    if (link.dataset.page === pageId) link.classList.add('active');
+                    else link.classList.remove('active');
+                });
+
+                if (window.innerWidth <= 768) {
+                    mainNav.classList.remove('active');
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.dataset.page) return;
+                    e.preventDefault();
+                    setActivePage(this.dataset.page);
+                });
+            });
+
+            footerNavs.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    setActivePage(this.dataset.page);
+                });
+            });
+
+            logoLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                setActivePage('home');
+            });
+
+            document.querySelectorAll('[data-page]').forEach(el => {
+                if (!el.classList.contains('nav-link') && !el.closest('.footer-links')) {
+                    el.addEventListener('click', function(e) {
+                        const p = this.dataset.page;
+                        if (p) { e.preventDefault(); setActivePage(p); }
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
